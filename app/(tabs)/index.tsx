@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
+  FlatList,
   Image,
   Pressable,
   ScrollView,
@@ -8,67 +9,114 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from "react-native";
 import ModalDropdown from "react-native-modal-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
-function app() {
+export default function app() {
+  const [loaddata, setChat] = useState([]);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState == 4 && request.status == 200) {
+      var response = request.responseText;
+
+      var responseJSONText = JSON.parse(response);
+      setChat(responseJSONText);
+    }
+  };
+
+  request.open(
+    "GET",
+    "http://10.0.2.2:8080/React-Native/chatApp/backend-php/load-chat.php"
+  );
+  request.send();
+
+  // Sample messages data
+  // const loaddata = [
+  //   {
+  //     id: "1",
+  //     text: "Good Morning",
+  //     time: "08.41 pm",
+  //     side: "left",
+  //     status: "seen",
+  //   },
+  //   {
+  //     id: "2",
+  //     text: "Same to you",
+  //     time: "08.41 pm",
+  //     side: "right",
+  //     status: "seen",
+  //   },
+  //   {
+  //     id: "3",
+  //     text: "Whatsup?",
+  //     time: "08.41 pm",
+  //     side: "left",
+  //     status: "seen",
+  //   },
+  // ];
+
+  // Function to render each message item
+  const renderMessage = ({ item }) => {
+    const messageStyle =
+      item.side === "right"
+        ? styles.messageContainer1
+        : styles.messageContainer2;
+
+    return (
+      <View style={messageStyle}>
+        <Text style={styles.msgText}>{item.msg}</Text>
+        <Text style={styles.msgTime}>{item.time}</Text>
+        {item.side === "right" && (
+          <Ionicons name="checkmark-done" size={20} style={styles.checkMark} />
+        )}
+      </View>
+    );
+  };
+
   const ui = (
     <SafeAreaView style={styles.container}>
-      {/* header  */}
+      {/* Header */}
       <View style={styles.header}>
-        <Pressable>
-          <MaterialIcons name="arrow-back" size={30} color={"black"} />
+        <Pressable style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={30} />
         </Pressable>
+
         <View style={styles.headerCenter}>
-          {/* ivon  */}
+          {/* icon */}
           <View style={styles.avatar}>
             <View style={styles.atomIcon}>
-              <View style={styles.nucleus}></View>
-              <View style={[styles.orbit, styles.orbit1]}></View>
-              <View style={[styles.orbit, styles.orbit2]}></View>
-              <View style={[styles.orbit, styles.orbit3]}></View>
+              <View style={styles.nucleus} />
+              <View style={[styles.orbit, styles.orbit1]} />
+              <View style={[styles.orbit, styles.orbit2]} />
+              <View style={[styles.orbit, styles.orbit3]} />
             </View>
           </View>
-          {/* ivon  */}
+          {/* icon */}
           <View style={styles.headerText}>
             <Text style={styles.headerTitle}>Chat</Text>
-            <Text style={styles.headerSubTitle}>Janidu Chamika</Text>
+            <Text style={styles.headerSubTitle}>Sahan Perera</Text>
           </View>
+
           <Pressable style={styles.moreButton}>
             <MaterialIcons name="more-vert" color="#333" size={24} />
           </Pressable>
         </View>
       </View>
-      {/* header  */}
-      <View style={styles.messagesContainer}>
-        {/*user messages*/}
-        <View style={styles.messageContainer1}>
-          <Text style={styles.msgText}>Hi</Text>
-          <Text style={styles.msgTime}>08.41 pm</Text>
-          <Ionicons
-            name="checkmark-done"
-            size={14}
-            color="#4FC3F7"
-            style={styles.checkMark}
-          />
-        </View>
-        {/*user messages*/}
+      {/* Header */}
 
-        {/*contact messages*/}
-        <View style={styles.messageContainer2}>
-          <Text style={styles.msgText}>Hi</Text>
-          <Text style={styles.msgTime}>08.41 pm</Text>
-          <Ionicons
-            name="checkmark-done"
-            size={14}
-            color="#4FC3F7"
-            style={styles.checkMark}
-          />
-        </View>
-        {/*contact messages*/}
-      </View>
-      {/* input area*/}
+      {/* Messages with FlatList */}
+      <FlatList
+        data={loaddata}
+        renderItem={renderMessage}
+        keyExtractor={(item) => item.id}
+        style={styles.messagesContainer}
+        contentContainerStyle={styles.messagesContentContainer}
+        showsVerticalScrollIndicator={false}
+        inverted={false} // Set to true if you want newest messages at bottom
+      />
+
+      {/* Input area */}
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
           <TextInput
@@ -77,14 +125,15 @@ function app() {
             placeholderTextColor="#F6685E"
           />
           <Pressable style={styles.sendButton}>
-            <MaterialIcons name="send" size={24} color="#5E6EFF" />
+            <MaterialIcons name="send" size={24} color="#5E6EF6" />
           </Pressable>
         </View>
       </View>
-      {/* input area*/}
+      {/* Input area */}
     </SafeAreaView>
   );
   return ui;
+ 
 }
 
 function signIn() {
@@ -236,33 +285,52 @@ function signUp() {
   );
   return signUplui;
 }
-const data = [
-  {
-    id: "1",
-    name: "Sahan Perera",
-    message: "Hello",
-    time: "9.30 pm",
-    avatar: "sp",
-    unread: false,
-  },
-  {
-    id: "2",
-    name: "Dinuka Dananjaya",
-    message: "Will You Come Tomorrow",
-    time: "9.45 pm",
-    avatar: "DD",
-    unread: false,
-  },
-  {
-    id: "3",
-    name: "Prabath Bandara",
-    message: "Thank You",
-    time: "10.00 pm",
-    avatar: "pb",
-    unread: false,
-  },
-];
-export default function Chat() {
+
+function Chat() {
+  const data = [
+    {
+      id: "1",
+      name: "Sahan Perera",
+      message: "Hello",
+      time: "9.30 pm",
+      avatar: "sp",
+      unread: false,
+    },
+    {
+      id: "2",
+      name: "Dinuka Dananjaya",
+      message: "Will You Come Tomorrow",
+      time: "9.45 pm",
+      avatar: "DD",
+      unread: false,
+    },
+    {
+      id: "3",
+      name: "Prabath Bandara",
+      message: "Thank You",
+      time: "10.00 pm",
+      avatar: "pb",
+      unread: false,
+    },
+  ];
+  const ChatItem = ({ item }) => (
+    <Pressable style={styles.chatItem}>
+      {/* Avatar */}
+      <View style={styles.avatar2}>
+        <Text style={styles.avatarText2}>{item.avatar}</Text>
+      </View>
+
+      {/* Content */}
+      <View style={styles.chatContent}>
+        <View style={styles.chatContentHeader}>
+          <Text style={styles.chatName}>{item.name}</Text>
+          <Text style={styles.chatTime}>{item.time}</Text>
+        </View>
+        <Text style={styles.chatMessage}>{item.message}</Text>
+      </View>
+    </Pressable>
+  );
+  const MakeConversation = ({ item }) => <ChatItem item={item} />;
   const ui = (
     <SafeAreaView style={styles.chatContainer}>
       {/* Chat Header */}
@@ -281,11 +349,70 @@ export default function Chat() {
           />
         </View>
       </View>
+      <FlatList
+        data={data}
+        renderItem={MakeConversation}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
   return ui;
 }
 const styles = StyleSheet.create({
+  messagesContentContainer: {
+    paddingVertical: 10,
+    flexGrow: 1,
+  },
+
+  chatList: {
+    flex: 1,
+  },
+  chatMessage: {
+    fontSize: 15,
+    color: "#888888",
+  },
+  chatTime: {
+    fontSize: 15,
+    color: "#888888",
+  },
+  chatName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000000",
+    flex: 1,
+  },
+  chatContentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  chatContent: {
+    flex: 1,
+  },
+  chatItem: {
+    flexDirection: "row",
+    padding: 16,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  avatar2: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#e1f5fe",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  avatarText2: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0288d1",
+  },
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
