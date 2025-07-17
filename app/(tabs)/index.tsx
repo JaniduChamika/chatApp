@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -9,11 +10,11 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
 } from "react-native";
 import ModalDropdown from "react-native-modal-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
-export default function app() {
+function app() {
   const [loaddata, setChat] = useState([]);
   var request = new XMLHttpRequest();
   request.onreadystatechange = function () {
@@ -133,10 +134,11 @@ export default function app() {
     </SafeAreaView>
   );
   return ui;
- 
 }
 
-function signIn() {
+export default function signIn() {
+  const [mobile, setMobile] = useState(null);
+  const [password, setPassword] = useState(null);
   const signInUI = (
     <SafeAreaView style={styles.signInContainer}>
       <View style={styles.content}>
@@ -157,7 +159,10 @@ function signIn() {
               color="#000"
               style={styles.mobileIcon}
             />
-            <TextInput style={styles.mobileText} />
+            <TextInput
+              style={styles.mobileText}
+              onChangeText={(text) => setMobile(text)}
+            />
           </View>
 
           <View style={styles.inputContainer2}>
@@ -167,12 +172,15 @@ function signIn() {
               color="#000"
               style={styles.mobileIcon}
             />
-            <TextInput style={styles.mobileText} />
+            <TextInput
+              style={styles.mobileText}
+              onChangeText={(text) => setPassword(text)}
+            />
             <Pressable style={styles.eyeIcon}>
               <Ionicons name="eye-off-outline" color="#000" size={24} />
             </Pressable>
           </View>
-          <Pressable style={styles.signInButton}>
+          <Pressable style={styles.signInButton} onPress={signinProcess}>
             <Text style={styles.signInButtonText}>Sign In</Text>
           </Pressable>
 
@@ -184,6 +192,31 @@ function signIn() {
     </SafeAreaView>
   );
   return signInUI;
+  function signinProcess() {
+    var jsRequestObject = { mobile: mobile, password: password };
+    var jsonRequestText = JSON.stringify(jsRequestObject);
+    var form = new FormData();
+    form.append("jsonRequestText", jsonRequestText);
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+      if (this.readyState == 4 && request.status == 200) {
+        var jsonResponseText = request.responseText;
+        var jsResponseObject = JSON.parse(jsonResponseText);
+
+        if (jsResponseObject.msg == "Error") {
+          Alert.alert("Response", "Invalid Details");
+        } else {
+          Alert.alert("Response", "Welcome ");
+        }
+      }
+    };
+    request.open(
+      "POST",
+      "http://10.0.2.2:8080/React-Native/chatApp/backend-php/signin.php",
+      true
+    );
+    request.send(form);
+  }
 }
 
 function signUp() {
